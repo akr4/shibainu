@@ -8,8 +8,8 @@ appender("STDOUT", ConsoleAppender) {
   withJansi = true
   encoder(PatternLayoutEncoder) {
       pattern = (highlight) ?
-        "%white(%date{HH:mm:ss.SSS}) %highlight(%-5level) %magenta(%X{requestId}) %cyan(%20.30logger) %highlight(%message) %n" :
-        "%date{HH:mm:ss.SSS} %-5level %X{requestId} %20.30logger %message%n"
+        "%white(%date{HH:mm:ss.SSS}) %highlight(%-5level) %magenta(%X{requestId}) %cyan(%20.30logger{30}) %highlight(%message) %n" :
+        "%date{HH:mm:ss.SSS} %-5level %X{requestId} %20.30logger{30} %message%n"
   }
 }
 root(INFO, [ "STDOUT" ])
