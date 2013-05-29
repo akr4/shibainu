@@ -1,0 +1,185 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'maven'
+
+group = 'net.physalis'
+version = '0.1-SNAPSHOT'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+ext {
+  logbackVersion = '1.0.9'
+  querydslVersion = '2.9.0'
+  jacksonVersion = '2.1.2'
+  postgresqlJdbcDriverVersion = '9.1-901.jdbc4'
+
+  dbUrl = 'jdbc:postgresql://localhost/shibainu'
+  dbUser = 'shibainu'
+}
+
+sourceSets {
+  querydsl
+}
+
+repositories {
+  mavenCentral()
+  maven {
+    url 'http://repo.springsource.org/release'
+  }
+}
+
+configurations {
+  all*.exclude group: 'commons-logging', module: 'commons-logging'
+
+  querydsl
+  flyway
+}
+
+dependencies {
+  compile 'org.slf4j:jcl-over-slf4j:1.7.2'
+  compile "ch.qos.logback:logback-classic:$logbackVersion"
+  runtime 'org.codehaus.groovy:groovy:1.8.6'
+
+  ['core', 'context', 'web', 'webmvc', 'context-support', 'jdbc', 'tx'].each { name ->
+    compile "org.springframework:spring-$name:3.2.2.RELEASE"
+  }
+
+  compile 'org.springframework.data:spring-data-jdbc-core:1.0.0.RELEASE'
+  compile 'org.springframework.data:spring-data-redis:1.0.3.RELEASE'
+
+  ['sql', 'core'].each { name ->
+    compile "com.mysema.querydsl:querydsl-$name:$querydslVersion"
+  }
+  querydsl "com.mysema.querydsl:querydsl-sql-codegen:$querydslVersion"
+  querydsl "postgresql:postgresql:$postgresqlJdbcDriverVersion"
+
+  ['core', 'annotations', 'databind'].each { name ->
+    compile "com.fasterxml.jackson.core:jackson-$name:$jacksonVersion"
+  }
+  compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+
+  providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+  compile 'com.github.jknack:handlebars:0.12.0'
+  compile 'com.github.jknack:handlebars-springmvc:0.12.0'
+
+  compile 'joda-time:joda-time:2.1'
+  compile 'org.apache.commons:commons-lang3:3.1'
+  compile 'org.hibernate:hibernate-validator:4.2.0.Final'
+  compile "postgresql:postgresql:$postgresqlJdbcDriverVersion"
+
+  testCompile 'junit:junit:4.11'
+  testCompile 'org.mockito:mockito-core:1.9.5'
+
+  flyway 'com.googlecode.flyway:flyway-ant:2.1.1'
+  flyway "postgresql:postgresql:$postgresqlJdbcDriverVersion"
+}
+
+task generateQuerydslSource {
+  ext.destDir = new File('src/main/generated/querydsl')
+
+  doLast {
+    destDir.mkdirs()
+    ant.taskdef(
+        name: 'antMetaDataExporter',
+        classname: 'com.mysema.query.sql.ant.AntMetaDataExporter',
+        classpath: configurations.querydsl.asPath,
+    )
+    ant.antMetaDataExporter(
+        dbUrl: 'jdbc:postgresql://localhost/shibainu',
+        dbUserName: 'shibainu',
+        jdbcDriverClass: 'org.postgresql.Driver',
+        schemaPattern: 'shibainu',
+        targetPackage: 'net.physalis.shibainu.domain.model',
+        targetSourceFolder: destDir,
+    )
+  }
+}
+
+compileJava {
+  source generateQuerydslSource.destDir
+}
+
+task flywayMigrate {
+  doLast {
+    ant.taskdef(
+      resource: 'com/googlecode/flyway/ant/antlib.xml',
+      classpath: configurations.flyway.asPath + ':build/resources/main'
+    )
+    ant.migrate(
+      url: dbUrl,
+      user: dbUser,
+    )
+  }
+}
+
+task pom << {
+  pom {
+    project {
+      build {
+        plugins {
+          plugin {
+            artifactId 'maven-resources-plugin'
+            version '2.5'
+            configuration {
+              encoding 'UTF-8'
+            }
+            executions {
+              ['default-resources', 'default-testResources', 'process-resources', 'process-test-resources'].each { x ->
+                execution {
+                  id x
+                  phase x
+                }
+              }
+            }
+          }
+          plugin {
+            artifactId 'maven-compiler-plugin'
+            version '3.1'
+            configuration {
+              source '1.7'
+              target '1.7'
+            }
+            executions {
+              ['compile', 'test-compile', 'default-testCompile', 'default-compile', 'process-resources'].each { x ->
+                execution {
+                  id x
+                  phase x
+                }
+              }
+            }
+          }
+          plugin {
+            groupId 'org.mortbay.jetty'
+            artifactId 'jetty-maven-plugin'
+            version '8.1.9.v20130131'
+            configuration {
+              webApp {
+                webInfIncludeJarPattern '^spring-web.*\\.jar$'
+                extraClasspath 'build/resources/main'
+                tempDirectory 'build/tmp'
+              }
+              classesDirectory 'build/classes/main'
+              jettyXml 'src/main/jetty/jetty.xml'
+              stopKey 'stop'
+              stopPort '8091'
+              connectors {
+                connector(implementation: 'org.eclipse.jetty.server.bio.SocketConnector') {
+                  port '8080'
+                }
+              }
+            }
+            dependencies {
+              dependency {
+                groupId 'postgresql'
+                artifactId 'postgresql'
+                version postgresqlJdbcDriverVersion
+              }
+            }
+          }
+        }
+      }
+    }
+  }.writeTo("pom.xml")
+}

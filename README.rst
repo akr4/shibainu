@@ -13,12 +13,19 @@ Shibainu is a template for Java web application. It utilizes:
 ==================
 setup dev database
 ==================
+
+```
 createuser -DRS shibainu
 createdb -EUTF-8 -Oshibainu shibainu
+```
 
 
 ==================
 Run
 ==================
-mvn -Dlog.highlight=true -Dapp.env=dev jetty:run
+
+```
+gradle pom
+gradle build && mvn -Dlog.highlight=true -Dapp.env=dev jetty:run
+```
 

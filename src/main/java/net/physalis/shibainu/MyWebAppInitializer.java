@@ -5,6 +5,8 @@ import net.physalis.shibainu.config.Env;
 import net.physalis.shibainu.presentation.admin.AdminConfig;
 import net.physalis.shibainu.presentation.api.ApiConfig;
 import net.physalis.shibainu.presentation.web.WebConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
@@ -22,12 +24,18 @@ import java.util.EnumSet;
 import java.util.Properties;
 
 public class MyWebAppInitializer implements WebApplicationInitializer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MyWebAppInitializer.class);
+
     @Override
     public void onStartup(ServletContext container) {
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
         rootContext.register(AppConfig.class);
         container.addListener(new ContextLoaderListener(rootContext));
-        container.setInitParameter(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, findActiveProfiles());
+
+        String activeProfiles = findActiveProfiles();
+        LOGGER.info("active profiles: " + activeProfiles);
+        container.setInitParameter(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, activeProfiles);
 
         LogbackInitializer.init();
 

@@ -14,7 +14,7 @@ appender("STDOUT", ConsoleAppender) {
 }
 root(INFO, [ "STDOUT" ])
 logger("net.physalis", DEBUG, [ "STDOUT" ], false)
-logger("org.springframework", INFO, [ "STDOUT" ], false)
+logger("org.springframework", DEBUG, [ "STDOUT" ], false)
 logger("org.springframework.cache", DEBUG, [ "STDOUT" ], false)
 logger("org.eclipse.jetty", INFO, [ "STDOUT" ], false)
 logger("com.mysema.query.sql.AbstractSQLQuery", DEBUG, [ "STDOUT" ], false)

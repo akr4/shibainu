@@ -2,7 +2,7 @@ package net.physalis.shibainu.infrastructure.repository;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.types.MappingProjection;
-import net.physalis.shibainu.QBook;
+import net.physalis.shibainu.domain.model.QBook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jdbc.query.QueryDslJdbcTemplate;

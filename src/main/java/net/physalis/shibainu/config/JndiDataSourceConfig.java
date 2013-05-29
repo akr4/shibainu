@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import javax.naming.InitialContext;
@@ -11,9 +12,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 @Configuration
-public class JndiDatabaseConfig {
+public class JndiDataSourceConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JndiDatabaseConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JndiDataSourceConfig.class);
 
     @Bean
     public DataSource dataSource() throws NamingException {

@@ -2,12 +2,11 @@
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
   <New id="datasource" class="org.eclipse.jetty.plus.jndi.Resource">
-    <Arg></Arg>
     <Arg>jdbc/shibainuDs</Arg>
     <Arg>
       <New class="org.postgresql.ds.PGSimpleDataSource">
         <Set name="User">shibainu</Set>
-        <Set name="Password"></Set>
+        <Set name="Password"/>
         <Set name="DatabaseName">shibainu</Set>
         <Set name="ServerName">localhost</Set>
         <Set name="PortNumber">5432</Set>
